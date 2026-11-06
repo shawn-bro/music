@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -69,6 +70,56 @@ void addAtEnd(int id, char name[], char singer[]) {
     printf("Song added successfully!\n");
 }
 
+void addAtPosition(int id, char name[], char singer[], int position) {
+    struct node *newnode, *temp;
+    int i;
+
+    if (position < 1) {
+        printf("Invalid position!\n");
+        return;
+    }
+
+    if (position == 1) {
+        addAtStart(id, name, singer);
+        return;
+    }
+
+    temp = head;
+
+    for (i = 1; i < position - 1 && temp != NULL; i++) {
+        temp = temp->next;
+    }
+
+    if (temp == NULL) {
+        printf("Invalid position!\n");
+        return;
+    }
+
+    newnode = malloc(sizeof(struct node));
+
+    if (newnode == NULL) {
+        printf("Memory allocation failed!\n");
+        return;
+    }
+
+    newnode->songID = id;
+    strcpy(newnode->songName, name);
+    strcpy(newnode->singerName, singer);
+
+    newnode->prev = temp;
+    newnode->next = temp->next;
+
+    if (temp->next == NULL) {
+        tail = newnode;
+    } else {
+        temp->next->prev = newnode;
+    }
+
+    temp->next = newnode;
+
+    printf("Song added successfully!\n");
+}
+
 void removeFromStart() {
     struct node *temp;
 
@@ -78,15 +129,13 @@ void removeFromStart() {
     }
 
     temp = head;
-    if(head == tail)
-{
-    head = tail = NULL;
-}
-else
-{
-    head = head->next;
-    head->prev = NULL;
-}
+
+    if (head == tail) {
+        head = tail = NULL;
+    } else {
+        head = head->next;
+        head->prev = NULL;
+    }
 
     printf("Removed song: %s\n", temp->songName);
     free(temp);
@@ -103,7 +152,7 @@ void removeFromEnd() {
     temp = tail;
 
     if (tail == head) {
-        head = tail =  NULL;
+        head = tail = NULL;
     } else {
         tail = tail->prev;
         tail->next = NULL;
@@ -113,7 +162,52 @@ void removeFromEnd() {
     free(temp);
 }
 
-void modifySong(int oldID, int newID) {
+
+void removeAtPosition(int position) {
+    struct node *temp;
+    int i;
+
+    if (head == NULL) {
+        printf("Playlist is empty!\n");
+        return;
+    }
+
+    if (position < 1) {
+        printf("Invalid position!\n");
+        return;
+    }
+
+    if (position == 1) {
+        removeFromStart();
+        return;
+    }
+
+    temp = head;
+
+    for (i = 1; i < position && temp != NULL; i++) {
+        temp = temp->next;
+    }
+
+    if (temp == NULL) {
+        printf("Invalid position!\n");
+        return;
+    }
+
+    if (temp == tail) {
+        removeFromEnd();
+        return;
+    }
+
+    temp->prev->next = temp->next;
+    temp->next->prev = temp->prev;
+
+    printf("Removed song: %s\n", temp->songName);
+
+    free(temp);
+}
+
+
+void modifySong(int oldID, int newID, char name[], char singer[]) {
     struct node *temp = head;
 
     while (temp != NULL && temp->songID != oldID) {
@@ -126,8 +220,10 @@ void modifySong(int oldID, int newID) {
     }
 
     temp->songID = newID;
+    strcpy(temp->songName, name);
+    strcpy(temp->singerName, singer);
 
-    printf("Song ID modified successfully!\n");
+    printf("Song details modified successfully!\n");
 }
 
 void displayForward() {
@@ -169,82 +265,116 @@ void displayBackward() {
 }
 
 int main() {
-    int choice, id, oldID, newID;
+    int choice, id, oldID, newID, position;
     char name[50], singer[50];
 
-    while (1) {
-        printf("\n===== MUSIC PLAYLIST MANAGEMENT =====\n");
-        printf("1. Add Song at Start\n");
-        printf("2. Add Song at End\n");
-        printf("3. Remove Song from Start\n");
-        printf("4. Remove Song from End\n");
-        printf("5. Display Playlist Forward\n");
-        printf("6. Display Playlist Backward\n");
-        printf("7. Modify Song ID\n");
-        printf("8. Exit\n");
+    
+while (1) {
+    printf("\n===== MUSIC PLAYLIST MANAGEMENT =====\n");
+    printf("1. Add Song at Start\n");
+    printf("2. Add Song at End\n");
+    printf("3. Add Song at Specific Position\n");
+    printf("4. Remove Song from Start\n");
+    printf("5. Remove Song from End\n");
+    printf("6. Remove Song at Specific Position\n");
+    printf("7. Display Playlist Forward\n");
+    printf("8. Display Playlist Backward\n");
+    printf("9. Modify Song Details\n");
+    printf("10. Exit\n");
 
-        printf("Enter your choice: ");
-        scanf("%d", &choice);
+    printf("Enter your choice: ");
+    scanf("%d", &choice);
 
-        switch (choice) {
-            case 1:
-                printf("Enter Song ID: ");
-                scanf("%d", &id);
+    switch (choice) {
 
-                printf("Enter Song Name: ");
-                scanf(" %49[^\n]", name);
+        case 1:
+            printf("Enter Song ID: ");
+            scanf("%d", &id);
 
-                printf("Enter Singer Name: ");
-                scanf(" %49[^\n]", singer);
+            printf("Enter Song Name: ");
+            scanf(" %49[^\n]", name);
 
-                addAtStart(id, name, singer);
-                break;
+            printf("Enter Singer Name: ");
+            scanf(" %49[^\n]", singer);
 
-            case 2:
-                printf("Enter Song ID: ");
-                scanf("%d", &id);
+            addAtStart(id, name, singer);
+            break;
 
-                printf("Enter Song Name: ");
-                scanf(" %49[^\n]", name);
+        case 2:
+            printf("Enter Song ID: ");
+            scanf("%d", &id);
 
-                printf("Enter Singer Name: ");
-                scanf(" %49[^\n]", singer);
+            printf("Enter Song Name: ");
+            scanf(" %49[^\n]", name);
 
-                addAtEnd(id, name, singer);
-                break;
+            printf("Enter Singer Name: ");
+            scanf(" %49[^\n]", singer);
 
-            case 3:
-                removeFromStart();
-                break;
+            addAtEnd(id, name, singer);
+            break;
 
-            case 4:
-                removeFromEnd();
-                break;
+        case 3:
+            printf("Enter Song ID: ");
+            scanf("%d", &id);
 
-            case 5:
-                displayForward();
-                break;
+            printf("Enter Song Name: ");
+            scanf(" %49[^\n]", name);
 
-            case 6:
-                displayBackward();
-                break;
+            printf("Enter Singer Name: ");
+            scanf(" %49[^\n]", singer);
 
-            case 7:
-                printf("Enter old Song ID: ");
-                scanf("%d", &oldID);
+            printf("Enter Position: ");
+            scanf("%d", &position);
 
-                printf("Enter new Song ID: ");
-                scanf("%d", &newID);
+            addAtPosition(id, name, singer, position);
+            break;
 
-                modifySong(oldID, newID);
-                break;
+        case 4:
+            removeFromStart();
+            break;
 
-            case 8:
-                printf("Exiting Playlist...\n");
-                return 0;
+        case 5:
+            removeFromEnd();
+            break;
 
-            default:
-                printf("Invalid choice!\n");
-        }
+        case 6:
+            printf("Enter Position: ");
+            scanf("%d", &position);
+
+            removeAtPosition(position);
+            break;
+
+        case 7:
+            displayForward();
+            break;
+
+        case 8:
+            displayBackward();
+            break;
+
+        case 9:
+            printf("Enter old Song ID: ");
+            scanf("%d", &oldID);
+
+            printf("Enter new Song ID: ");
+            scanf("%d", &newID);
+
+            printf("Enter Song Name: ");
+            scanf(" %49[^\n]", name);
+
+            printf("Enter Singer Name: ");
+            scanf(" %49[^\n]", singer);
+
+            modifySong(oldID, newID, name, singer);
+            break;
+
+        case 10:
+            printf("Exiting Playlist...\n");
+            return 0;
+
+        default:
+            printf("Invalid choice!\n");
     }
+}
+
 }
